@@ -116,6 +116,13 @@ export class HumanGenomeAssembly {
   }
 
   /**
+   * Returns the domain of the genome assembly.
+   */
+  getDomain() {
+    return [1, this.totalLength] as [number, number];
+  }
+
+  /**
    * Returns the length of a chromosome.
    *
    * @example
