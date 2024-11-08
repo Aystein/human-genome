@@ -42,7 +42,9 @@ export class HumanGenomeAssembly {
    *
    * UTSC format: "chr:start-end"
    *
-   * @param range A range string
+   * @example
+   * const range = hg38.parseChromRange('chr1:100-200');
+   * console.log(range); // { chrom: 'chr1', start: 100, end: 200 }
    */
   parseChromRange(range: string, format: 'ucsc' = 'ucsc'): ChromRange {
     const trimRange = range.trim();
@@ -66,40 +68,100 @@ export class HumanGenomeAssembly {
     }
   }
 
+  /**
+   * Returns a half-open interval for a chromosome.
+   * For chromosome 1, the interval would be (0, 248956422], so the first base included
+   * is 1 and the last base included is 248956422.
+   *
+   * @example
+   * const interval = hg38.getChromInterval('chr1');
+   * console.log(interval); // [0, 248956422]
+   */
   getChromInterval(chrom: ChromKey): [number, number] {
     return this.intervals[chrom];
   }
 
+  /**
+   * Returns a record of all chromosome intervals.
+   *
+   * @example
+   * const intervals = hg38.getChromIntervals();
+   * console.log(intervals.chr1); // [0, 248956422]
+   * console.log(intervals.chr2); // [248956422, 491149951]
+   */
   getChromIntervals(): Record<ChromKey, [number, number]> {
     return this.intervals;
   }
 
+  /**
+   * Returns the total length of the genome assembly.
+   *
+   * @example
+   * const totalLength = hg38.getTotalLength();
+   * console.log(totalLength); // 3088269832
+   */
   getTotalLength() {
     return this.totalLength;
   }
 
+  /**
+   * Returns an array of all chromosome keys in order.
+   *
+   * @example
+   * const chromKeys = hg38.getChromKeys();
+   * console.log(chromKeys); // ['chr1', 'chr2', ..., 'chrY']
+   */
   getChromKeys() {
     return this.chromosomesInOrder;
   }
 
+  /**
+   * Returns the length of a chromosome.
+   *
+   * @example
+   * const length = hg38.getChromLength('chr1');
+   * console.log(length); // 248956422
+   */
   getChromLength(chrom: ChromKey): number {
     return this.lengths[chrom];
   }
 
+  /**
+   * Returns a record of all chromosome lengths.
+   *
+   * @example
+   * const lengths = hg38.getChromLengths();
+   * console.log(lengths.chr1); // 248956422
+   * console.log(lengths.chr2); // 242193529
+   */
   getChromLengths(): Record<ChromKey, number> {
     return this.lengths;
   }
 
+  /**
+   * Converts a relative position on a chromosome to an absolute position.
+   *
+   * @example
+   * const abs = hg38.relativeToAbsolute('chr1', 100);
+   * console.log(abs); // 100
+   */
   relativeToAbsolute(chrom: ChromKey, pos: number): number {
-    if (pos < 0 || pos >= this.lengths[chrom]) {
+    if (pos <= 0 || pos > this.lengths[chrom]) {
       throw new Error('Position out of bounds');
     }
 
     return this.intervals[chrom][0] + pos;
   }
 
+  /**
+   * Converts an absolute position to a relative position on a chromosome.
+   *
+   * @example
+   * const rel = hg38.absoluteToRelative(100);
+   * console.log(rel); // { chrom: 'chr1', pos: 100 }
+   */
   absoluteToRelative(pos: number): { chrom: ChromKey; pos: number } {
-    if (pos < 0 || pos >= this.totalLength) {
+    if (pos <= 0 || pos > this.totalLength) {
       throw new Error('Position out of bounds');
     }
 
@@ -112,9 +174,9 @@ export class HumanGenomeAssembly {
       const chrom = this.chromosomesInOrder[mid];
       const interval = this.intervals[chrom];
 
-      if (pos < interval[0]) {
+      if (pos <= interval[0]) {
         right = mid - 1;
-      } else if (pos >= interval[1]) {
+      } else if (pos > interval[1]) {
         left = mid + 1;
       } else {
         return { chrom, pos: pos - interval[0] };

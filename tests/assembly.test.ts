@@ -46,11 +46,34 @@ test('random sample chrom space', () => {
     const interval = hga.getChromInterval(chrom);
 
     for (let i = 0; i < 1000; i++) {
-      const relative = Math.random() * len;
+      const relative = 1 + Math.floor(Math.random() * len);
       abs = hga.relativeToAbsolute(chrom, relative);
 
       expect(abs).toBe(interval[0] + relative);
     }
+  });
+});
+
+test('check edge cases in absolute to relative conversion', () => {
+  const hga = new HumanGenomeAssembly('GRCh38');
+  const chromKeys = hga.getChromKeys();
+
+  chromKeys.forEach((chrom) => {
+    const len = hga.getChromLength(chrom);
+    const interval = hga.getChromInterval(chrom);
+
+    expect(() => hga.relativeToAbsolute(chrom, 0)).toThrowError(
+      'Position out of bounds',
+    );
+    expect(() => hga.relativeToAbsolute(chrom, -1)).toThrowError(
+      'Position out of bounds',
+    );
+    expect(() => hga.relativeToAbsolute(chrom, len + 1)).toThrowError(
+      'Position out of bounds',
+    );
+
+    expect(hga.relativeToAbsolute(chrom, 1)).toBe(interval[0] + 1);
+    expect(hga.relativeToAbsolute(chrom, len)).toBe(interval[1]);
   });
 });
 
