@@ -1,8 +1,8 @@
 import { test, expect } from 'vitest';
-import { HumanGenomeAssembly } from '../src/HumanGenomeAssembly';
+import { HumanGenome } from '../src/HumanGenome';
 
 test('test global boundaries', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
 
   const first = hga.absoluteToRelative(1);
   expect(first).toStrictEqual({ chrom: 'chr1', pos: 1 });
@@ -22,7 +22,7 @@ test('test global boundaries', () => {
 });
 
 test('test chrom boundaries', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
 
   const chromKeys = hga.getChromKeys();
 

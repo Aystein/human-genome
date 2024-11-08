@@ -1,9 +1,9 @@
-import { HumanGenomeAssembly } from './HumanGenomeAssembly';
+import { HumanGenome } from './HumanGenome';
 
 // Export types
 export * from './types';
 
-export * from './HumanGenomeAssembly';
+export * from './HumanGenome';
 
 // Export singleton instance
-export const hg38 = new HumanGenomeAssembly('GRCh38');
+export const hg38 = new HumanGenome('GRCh38');

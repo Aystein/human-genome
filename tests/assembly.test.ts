@@ -1,13 +1,13 @@
 import { expect, test } from 'vitest';
-import { HumanGenomeAssembly } from '../src/HumanGenomeAssembly';
+import { HumanGenome } from '../src/HumanGenome';
 
 test('total length', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
   expect(hga.getTotalLength()).toBe(3088269832);
 });
 
 test('chrom keys', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
   expect(hga.getChromKeys()).toEqual([
     'chr1',
     'chr2',
@@ -37,7 +37,7 @@ test('chrom keys', () => {
 });
 
 test('random sample chrom space', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
   const chromKeys = hga.getChromKeys();
 
   let abs = 0;
@@ -55,7 +55,7 @@ test('random sample chrom space', () => {
 });
 
 test('check edge cases in absolute to relative conversion', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
   const chromKeys = hga.getChromKeys();
 
   chromKeys.forEach((chrom) => {
@@ -78,7 +78,7 @@ test('check edge cases in absolute to relative conversion', () => {
 });
 
 test('check generated intervals', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
   const intervals = hga.getChromIntervals();
 
   expect(intervals).toStrictEqual({
@@ -110,7 +110,7 @@ test('check generated intervals', () => {
 });
 
 test('check generated lengths', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
   const lengths = hga.getChromLengths();
 
   expect(lengths).toStrictEqual({

@@ -1,8 +1,8 @@
 import { test, expect } from 'vitest';
-import { HumanGenomeAssembly } from '../src/HumanGenomeAssembly';
+import { HumanGenome } from '../src/HumanGenome';
 
 test('parse range', () => {
-  const hga = new HumanGenomeAssembly('GRCh38');
+  const hga = new HumanGenome('GRCh38');
 
   expect(hga.parseChromRange('chr1:100-200')).toEqual({
     chrom: 'chr1',
