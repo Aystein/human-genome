@@ -1,11 +1,13 @@
 import { lengths as GRCh38_p14_lengths } from './GRCh38_p14';
 import { ChromKey, ChromRange } from './types';
-import { chromKeys } from './util';
+import { chromKeyIndexMap, chromKeys } from './util';
 
 export class HumanGenome {
   private lengths: Record<ChromKey, number>;
 
   private chromosomesInOrder: ChromKey[];
+
+  private chromKeyIndexMap: Record<ChromKey, number>;
 
   private intervals: Record<ChromKey, [number, number]>;
 
@@ -17,6 +19,7 @@ export class HumanGenome {
         this.lengths = GRCh38_p14_lengths();
         this.chromosomesInOrder = chromKeys();
         this.intervals = {} as Record<ChromKey, [number, number]>;
+        this.chromKeyIndexMap = chromKeyIndexMap();
 
         let pos = 0;
         for (const chrom of this.chromosomesInOrder) {
@@ -193,64 +196,28 @@ export class HumanGenome {
     throw new Error('Position out of bounds');
   }
 
-  tickSpec(start: number, stop: number, count: number) {
-    const e10 = Math.sqrt(50);
-    const e5 = Math.sqrt(10);
-    const e2 = Math.sqrt(2);
-
-    const step = (stop - start) / count;
-    const power = Math.floor(Math.log10(step));
-    const error = step / Math.pow(10, power);
-
-    const factor = error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1;
-
-    let i1, i2, inc;
-    if (power < 0) {
-      inc = Math.pow(10, -power) / factor;
-      i1 = Math.round(start * inc);
-      i2 = Math.round(stop * inc);
-      if (i1 / inc < start) ++i1;
-      if (i2 / inc > stop) --i2;
-      inc = -inc;
-    } else {
-      inc = Math.pow(10, power) * factor;
-      i1 = Math.round(start / inc);
-      i2 = Math.round(stop / inc);
-      if (i1 * inc < start) ++i1;
-      if (i2 * inc > stop) --i2;
-    }
-
-    return { i1, i2, inc };
+  /**
+   * Returns the index (starting from 0) for a given ChromKey.
+   *
+   * @example
+   * const index = hg38.getChromIndex('chr1');
+   * console.log(index); // 0
+   */
+  getChromIndex(chrom: ChromKey): number {
+    return this.chromKeyIndexMap[chrom];
   }
 
-  ticks(domain: [number, number], count: number) {
-    if (count <= 2) {
-      throw new Error('Tick count must be at least 2');
-    }
-    if (domain[0] === domain[1]) {
-      throw new Error('Invalid domain');
-    }
-
-    const [start, end] = domain;
-    const ascending = start < end;
-
-    const { i1, i2, inc } = ascending
-      ? this.tickSpec(start, end, count)
-      : this.tickSpec(end, start, count);
-
-    if (!(i2 >= i1)) return [];
-
-    const n = i2 - i1 + 1,
-      ticks = new Array(n);
-
-    if (ascending) {
-      if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) / -inc;
-      else for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) * inc;
-    } else {
-      if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) / -inc;
-      else for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) * inc;
-    }
-
-    return ticks;
+  /**
+   * Function that adds the 'chr' prefix to a chromosome key if it is not already present.
+   *
+   * @example
+   * const chrom = hg38.prefixChromKey('1');
+   * console.log(chrom); // 'chr1'
+   *
+   * const chrom = hg38.prefixChromKey('chr1');
+   * console.log(chrom); // 'chr1'
+   */
+  prefixChromKey(chrom: string): ChromKey {
+    return (chrom.startsWith('chr') ? chrom : `chr${chrom}`) as ChromKey;
   }
 }
