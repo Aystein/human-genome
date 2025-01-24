@@ -140,3 +140,19 @@ test('check generated lengths', () => {
     chrY: 57227415,
   });
 });
+
+test('check chrom Index', () => {
+  const hga = new HumanGenome('GRCh38');
+  const chromKeys = hga.getChromKeys();
+
+  chromKeys.forEach((chrom, i) => {
+    expect(hga.getChromIndex(chrom)).toBe(i);
+  });
+});
+
+test('prefix test', () => {
+  const hga = new HumanGenome('GRCh38');
+  expect(hga.prefixChromKey('1')).toBe('chr1');
+  expect(hga.prefixChromKey('X')).toBe('chrX');
+  expect(hga.prefixChromKey('chrY')).toBe('chrY');
+})
