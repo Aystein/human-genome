@@ -1,4 +1,4 @@
-# human-genome-assembly
+# human-genome
 
 This library contains convenient functions to work with genome coordinates. It exports one global assembly for each version. Currently the following versions are supported:
 
@@ -9,13 +9,13 @@ This library contains convenient functions to work with genome coordinates. It e
 Install the dependencies:
 
 ```bash
-yarn add human-genome-assembly
+yarn add human-genome
 ```
 
 ## Usage
 
 ```tsx
-import { hg38 } from 'human-genome-assembly';
+import { hg38 } from 'human-genome';
 
 // Get chromosome length
 const chr1Length = hg38.getChromLength('chr1'); // 248956422
@@ -35,7 +35,7 @@ const rel = hg38.absoluteToRelative(5329844);
 ## API
 
 ```tsx
-class HumanGenomeAssembly {
+class HumanGenome {
   parseChromRange(range: string, format?: 'ucsc'): ChromRange;
   getChromInterval(chrom: ChromKey): [number, number];
   getChromIntervals(): Record<ChromKey, [number, number]>;
