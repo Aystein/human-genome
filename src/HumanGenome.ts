@@ -1,5 +1,5 @@
 import { lengths as GRCh38_p14_lengths } from './GRCh38_p14';
-import { ChromKey, ChromRange } from './types';
+import { AnyChromKey, ChromKey, ChromRange, StrippedChromKey } from './types';
 import { chromKeyIndexMap, chromKeys } from './util';
 
 export class HumanGenome {
@@ -163,6 +163,15 @@ export class HumanGenome {
     return this.intervals[chrom][0] + pos;
   }
 
+  safeRelativeToAbsolute(chrom: ChromKey, pos: number): number | null {
+    if (pos <= 0 || pos > this.lengths[chrom]) {
+      return null;
+    }
+
+    return pos;
+  }
+
+
   /**
    * Converts an absolute position to a relative position on a chromosome.
    *
@@ -196,6 +205,15 @@ export class HumanGenome {
     throw new Error('Position out of bounds');
   }
 
+  safeAbsoluteToRelative(pos: number): { chrom: ChromKey; pos: number } | null {
+    if (pos <= 0 || pos > this.totalLength) {
+      return null;
+    }
+
+    return this.absoluteToRelative(pos);
+  }
+
+
   /**
    * Returns the index (starting from 0) for a given ChromKey.
    *
@@ -205,6 +223,18 @@ export class HumanGenome {
    */
   getChromIndex(chrom: ChromKey): number {
     return this.chromKeyIndexMap[chrom];
+  }
+
+  isChromKey(chrom: string): chrom is ChromKey {
+    return chrom in this.chromKeyIndexMap;
+  }
+
+  isAnyChromKey(chrom: string): chrom is AnyChromKey {
+    return this.isChromKey(chrom) || this.isStrippedChromKey(chrom);
+  }
+
+  isStrippedChromKey(chrom: string): chrom is StrippedChromKey {
+    return `chr${chrom}` in this.chromKeyIndexMap;
   }
 
   /**
@@ -219,5 +249,19 @@ export class HumanGenome {
    */
   prefixChromKey(chrom: string): ChromKey {
     return (chrom.startsWith('chr') ? chrom : `chr${chrom}`) as ChromKey;
+  }
+
+  /**
+   * Function that removes the 'chr' prefix from a chromosome key if it is present.
+   *
+   * @example
+   * const chrom = hg38.stripChromKey('chr1');
+   * console.log(chrom); // '1'
+   *
+   * const chrom = hg38.stripChromKey('1');
+   * console.log(chrom); // '1'
+   */
+  stripChromKey(chrom: AnyChromKey): StrippedChromKey {
+    return this.isChromKey(chrom) ? chrom.slice(3) as StrippedChromKey : chrom;
   }
 }
