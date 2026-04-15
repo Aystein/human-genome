@@ -120,9 +120,14 @@ export class HumanGenome {
 
   /**
    * Returns the domain of the genome assembly.
+   * @deprecated Use getHalfOpenDomain instead, getDomain is 1 based (closed interval) while getHalfOpenDomain is 0 based (half open interval).
    */
   getDomain() {
     return [1, this.totalLength] as [number, number];
+  }
+
+  getHalfOpenDomain(): [number, number] {
+    return [0, this.totalLength];
   }
 
   /**
@@ -148,6 +153,10 @@ export class HumanGenome {
     return this.lengths;
   }
 
+  private _relativeToAbsolute(chrom: ChromKey, pos: number) {
+    return this.intervals[chrom][0] + pos;
+  }
+
   /**
    * Converts a relative position on a chromosome to an absolute position.
    *
@@ -160,7 +169,7 @@ export class HumanGenome {
       throw new Error('Position out of bounds');
     }
 
-    return this.intervals[chrom][0] + pos;
+    return this._relativeToAbsolute(chrom, pos);
   }
 
   safeRelativeToAbsolute(chrom: ChromKey, pos: number): number | null {
@@ -168,23 +177,10 @@ export class HumanGenome {
       return null;
     }
 
-    return pos;
+    return this._relativeToAbsolute(chrom, pos);
   }
 
-
-  /**
-   * Converts an absolute position to a relative position on a chromosome.
-   *
-   * @example
-   * const rel = hg38.absoluteToRelative(100);
-   * console.log(rel); // { chrom: 'chr1', pos: 100 }
-   */
-  absoluteToRelative(pos: number): { chrom: ChromKey; pos: number } {
-    if (pos <= 0 || pos > this.totalLength) {
-      throw new Error('Position out of bounds');
-    }
-
-    // Binary search in intervals
+  private _absoluteToRelative(pos: number): { chrom: ChromKey; pos: number } {
     let left = 0;
     let right = this.chromosomesInOrder.length - 1;
 
@@ -205,14 +201,28 @@ export class HumanGenome {
     throw new Error('Position out of bounds');
   }
 
+  /**
+   * Converts an absolute position to a relative position on a chromosome.
+   *
+   * @example
+   * const rel = hg38.absoluteToRelative(100);
+   * console.log(rel); // { chrom: 'chr1', pos: 100 }
+   */
+  absoluteToRelative(pos: number): { chrom: ChromKey; pos: number } {
+    if (pos <= 0 || pos > this.totalLength) {
+      throw new Error('Position out of bounds');
+    }
+
+    return this._absoluteToRelative(pos);
+  }
+
   safeAbsoluteToRelative(pos: number): { chrom: ChromKey; pos: number } | null {
     if (pos <= 0 || pos > this.totalLength) {
       return null;
     }
 
-    return this.absoluteToRelative(pos);
+    return this._absoluteToRelative(pos);
   }
-
 
   /**
    * Returns the index (starting from 0) for a given ChromKey.
@@ -262,6 +272,8 @@ export class HumanGenome {
    * console.log(chrom); // '1'
    */
   stripChromKey(chrom: AnyChromKey): StrippedChromKey {
-    return this.isChromKey(chrom) ? chrom.slice(3) as StrippedChromKey : chrom;
+    return this.isChromKey(chrom)
+      ? (chrom.slice(3) as StrippedChromKey)
+      : chrom;
   }
 }
